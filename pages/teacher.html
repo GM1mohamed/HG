@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - لوحة المعلم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .teacher-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .stat-card i {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .form-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .form-card h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            min-height: 90px;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+        
+        .upload-area img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .source-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .source-tab {
+            background: var(--surface2);
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .source-tab.active {
+            background: var(--primary);
+            color: #fff;
+        }
+        
+        .playlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface2);
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: var(--surface2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GMube Edu</span>
+        </a>
+        <div style="display:flex;gap:8px;">
+            <a href="profile.html" class="btn btn-secondary btn-sm"><i class="fas fa-user"></i> حسابي</a>
+            <button onclick="logout()" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> خروج</button>
+        </div>
+    </div>
+
+    <div class="page-container" id="dashboard">
+        <div class="loading-spinner" style="text-align:center;padding:40px;">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="../index.html" class="nav-item"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+        <a href="teachers.html" class="nav-item"><i class="fas fa-users"></i><span>الأساتذة</span></a>
+        <a href="profile.html" class="nav-item active"><i class="fas fa-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/error-handler.js"></script>
+    <script>
+        let session = getSession();
+        if (!session || session.type !== 'teacher') {
+            alert('يرجى تسجيل الدخول كمعلم');
+            location.href = '../login.html';
+        }
+        
+        let teacher = null;
+        let videos = [];
+        let playlists = [];
+        let currentSource = 'youtube';
+        
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+        
+        async function loadDashboard() {
+            try {
+                let [teacherRes, videosRes, playlistsRes] = await Promise.all([
+                    api('teachers?user_id=eq.' + session.user_id),
+                    api('videos?user_id=eq.' + session.user_id + '&order=created_at.desc'),
+                    getPlaylists(session.user_id)
+                ]);
+                
+                if (!teacherRes || !teacherRes.length) return;
+                teacher = teacherRes[0];
+                videos = videosRes || [];
+                playlists = playlistsRes || [];
+                render();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function render() {
+            let totalViews = videos.reduce((sum, v) => sum + (v.views || 0), 0);
+            
+            document.getElementById('dashboard').innerHTML = `
+                <div class="teacher-stats">
+                    <div class="stat-card"><i class="fas fa-video"></i><div class="number">${videos.length}</div><div class="label">دروسي</div></div>
+                    <div class="stat-card"><i class="fas fa-eye"></i><div class="number">${formatNumber(totalViews)}</div><div class="label">مشاهدات</div></div>
+                    <div class="stat-card"><i class="fas fa-list"></i><div class="number">${playlists.length}</div><div class="label">قوائم تشغيل</div></div>
+                </div>
+                
+                <div class="form-card">
+                    <h3><i class="fas fa-plus"></i> إضافة درس جديد</h3>
+                    
+                    <div class="source-tabs">
+                        <button class="source-tab ${currentSource === 'youtube' ? 'active' : ''}" onclick="setSource('youtube',this)">YouTube</button>
+                        <button class="source-tab ${currentSource === 'telegram' ? 'active' : ''}" onclick="setSource('telegram',this)">Telegram</button>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group"><label>العنوان</label><input type="text" id="vTitle" placeholder="عنوان الدرس"></div>
+                        <div class="form-group"><label>المادة</label><select id="vCat">${getCategoryOptions()}</select></div>
+                        <div class="form-group"><label>الصف</label><select id="vGrade">${getGradeOptions()}</select></div>
+                        <div class="form-group"><label>قائمة التشغيل</label><select id="vPlaylist"><option value="">بدون قائمة</option>${getPlaylistOptions()}</select></div>
+                    </div>
+                    
+                    <div id="youtubeSection" ${currentSource === 'youtube' ? '' : 'style="display:none"'}>
+                        <div class="form-group"><label>رابط YouTube</label><input type="text" id="youtubeUrl" placeholder="https://youtu.be/..."></div>
+                    </div>
+                    
+                    <div id="telegramSection" ${currentSource === 'telegram' ? '' : 'style="display:none"'}>
+                        <div class="form-group"><label>ملف الفيديو</label><input type="file" id="vFile" accept="video/*"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>صورة الغلاف (اختياري)</label>
+                        <div class="upload-area" onclick="document.getElementById('thumbFile').click()">
+                            <input type="file" id="thumbFile" accept="image/*" style="display:none;" onchange="previewThumb(this)">
+                            <div class="placeholder" id="thumbPlaceholder"><i class="fas fa-image"></i> اضغط لرفع صورة</div>
+                            <img id="thumbPreview" style="display:none;">
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="uploadVideo()" id="uploadBtn"><i class="fas fa-upload"></i> رفع الدرس</button>
+                    <div id="progressDiv" style="display:none;margin-top:12px;">
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                        <small id="progressText" style="color:var(--text-muted)">0%</small>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <h3><i class="fas fa-list"></i> قوائم التشغيل</h3>
+                    <div style="display:flex;gap:8px;margin-bottom:16px;">
+                        <input type="text" id="plName" placeholder="اسم القائمة" style="flex:1;" class="form-group">
+                        <button class="btn btn-sm" onclick="createPlaylist()"><i class="fas fa-plus"></i> إضافة</button>
+                    </div>
+                    <div id="playlistsList">${renderPlaylists()}</div>
+                </div>
+                
+                <div class="form-card">
+                    <h3><i class="fas fa-video"></i> دروسي</h3>
+                    <div class="videos-grid" id="myVideosGrid">${renderMyVideos()}</div>
+                </div>
+            `;
+        }
+        
+        function setSource(source, btn) {
+            currentSource = source;
+            document.querySelectorAll('.source-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('youtubeSection').style.display = source === 'youtube' ? 'block' : 'none';
+            document.getElementById('telegramSection').style.display = source === 'telegram' ? 'block' : 'none';
+        }
+        
+        function previewThumb(input) {
+            let file = input.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('thumbPreview').src = e.target.result;
+                document.getElementById('thumbPreview').style.display = 'block';
+                document.getElementById('thumbPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function uploadVideo() {
+            let title = document.getElementById('vTitle').value.trim();
+            let category = document.getElementById('vCat').value;
+            let grade = document.getElementById('vGrade').value;
+            let playlistId = document.getElementById('vPlaylist').value || null;
+            let thumbFile = document.getElementById('thumbFile').files[0];
+            
+            if (!title || !category || !grade) {
+                alert('يرجى ملء الحقول المطلوبة');
+                return;
+            }
+            
+            let btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+            
+            try {
+                let thumbnailUrl = null;
+                if (thumbFile) {
+                    let res = await uploadThumbnailToTelegram(thumbFile);
+                    thumbnailUrl = res.url;
+                }
+                
+                if (currentSource === 'youtube') {
+                    let youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+                    if (!youtubeUrl) throw new Error('أدخل رابط YouTube');
+                    let videoId = extractYouTubeId(youtubeUrl);
+                    if (!videoId) throw new Error('رابط غير صحيح');
+                    let embedUrl = 'https://www.youtube.com/embed/' + videoId;
+                    
+                    await addVideo(title, category, grade, embedUrl, videoId, session.user_id, session.name, playlistId, null, thumbnailUrl, SOURCE_TYPES.YOUTUBE);
+                    document.getElementById('youtubeUrl').value = '';
+                } else {
+                    let file = document.getElementById('vFile').files[0];
+                    if (!file) throw new Error('اختر ملف فيديو');
+                    if (file.size > 50 * 1024 * 1024) throw new Error('الحد الأقصى 50 ميجابايت');
+                    
+                    document.getElementById('progressDiv').style.display = 'block';
+                    let res = await uploadToTelegram(file, p => {
+                        document.getElementById('progressFill').style.width = p + '%';
+                        document.getElementById('progressText').textContent = p + '%';
+                    });
+                    
+                    await addVideo(title, category, grade, res.url, res.file_id, session.user_id, session.name, playlistId, null, thumbnailUrl, SOURCE_TYPES.TELEGRAM);
+                    document.getElementById('vFile').value = '';
+                    document.getElementById('progressDiv').style.display = 'none';
+                }
+                
+                alert('تم إضافة الدرس بنجاح');
+                document.getElementById('vTitle').value = '';
+                document.getElementById('thumbFile').value = '';
+                document.getElementById('thumbPreview').style.display = 'none';
+                document.getElementById('thumbPlaceholder').style.display = 'block';
+                loadDashboard();
+                
+            } catch(e) {
+                alert('خطأ: ' + e.message);
+                document.getElementById('progressDiv').style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload"></i> رفع الدرس';
+            }
+        }
+        
+        async function createPlaylist() {
+            let name = document.getElementById('plName').value.trim();
+            if (!name) return alert('أدخل اسم القائمة');
+            await createPlaylist(name, session.user_id, session.name, teacher.subject);
+            document.getElementById('plName').value = '';
+            loadDashboard();
+        }
+        
+        async function deletePlaylist(id) {
+            if (!confirm('حذف القائمة؟')) return;
+            await api('playlists?id=eq.' + id, 'DELETE');
+            loadDashboard();
+        }
+        
+        async function deleteVideo(id) {
+            if (!confirm('حذف الدرس؟')) return;
+            await api('videos?id=eq.' + id, 'DELETE');
+            loadDashboard();
+        }
+        
+        function getCategoryOptions() {
+            let opts = '';
+            for (let i = 1; i < CATEGORIES.length; i++) {
+                opts += `<option value="${CATEGORIES[i]}">${CATEGORIES[i]}</option>`;
+            }
+            return opts;
+        }
+        
+        function getGradeOptions() {
+            let opts = '';
+            GRADES.forEach(g => opts += `<option value="${g}">${g}</option>`);
+            return opts;
+        }
+        
+        function getPlaylistOptions() {
+            let opts = '';
+            playlists.forEach(p => opts += `<option value="${p.id}">${escapeHtml(p.name)} (${p.video_count || 0})</option>`);
+            return opts;
+        }
+        
+        function renderPlaylists() {
+            if (!playlists.length) return '<p style="color:var(--text-muted);font-size:13px;">لا توجد قوائم</p>';
+            let html = '';
+            playlists.forEach(p => {
+                html += `
+                    <div class="playlist-item">
+                        <span><i class="fas fa-list"></i> ${escapeHtml(p.name)} (${p.video_count || 0})</span>
+                        <div>
+                            <a href="playlist.html?id=${p.id}" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i></a>
+                            <button class="btn btn-danger btn-sm" onclick="deletePlaylist(${p.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        function renderMyVideos() {
+            if (!videos.length) return '<div class="empty-state"><i class="fas fa-video-slash"></i><p>لا توجد دروس</p></div>';
+            let html = '';
+            videos.forEach(v => {
+                html += `
+                    <div class="video-card" onclick="location.href='watch.html?id=${v.id}'">
+                        <div class="video-thumbnail">
+                            ${v.thumbnail ? `<img src="${v.thumbnail}" onerror="this.remove()">` : '<i class="fas fa-play-circle"></i>'}
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">${escapeHtml(v.title)}</div>
+                            <div class="video-meta">
+                                <span>${escapeHtml(v.category)}</span>
+                                <span>👁 ${formatNumber(v.views || 0)}</span>
+                            </div>
+                            <button class="btn btn-danger btn-sm" style="margin-top:8px;width:100%;" onclick="event.stopPropagation();deleteVideo(${v.id})"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            let div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function formatNumber(n) {
+            if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+        
+        function logout() {
+            localStorage.removeItem('gmube_edu_session');
+            location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>

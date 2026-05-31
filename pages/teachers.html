@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - الأساتذة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .teachers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+        
+        .teacher-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .teacher-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(76,175,80,0.2);
+        }
+        
+        .teacher-avatar {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .teacher-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .teacher-avatar i {
+            font-size: 36px;
+            color: #fff;
+        }
+        
+        .teacher-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .teacher-subject {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 16px;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            color: var(--text);
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .page-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        @media (max-width: 500px) {
+            .teachers-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GMube Edu</span>
+        </a>
+        <div>
+            <a href="../index.html" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> الرئيسية</a>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="page-header">
+            <h2><i class="fas fa-chalkboard-teacher"></i> الأساتذة</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ابحث عن أستاذ...">
+            </div>
+        </div>
+        
+        <div class="teachers-grid" id="teachersGrid">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>جاري التحميل...</p></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="../index.html" class="nav-item"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+        <a href="teachers.html" class="nav-item active"><i class="fas fa-users"></i><span>الأساتذة</span></a>
+        <a href="../login.html" class="nav-item" id="accountNav"><i class="fas fa-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/error-handler.js"></script>
+    <script>
+        let allTeachers = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadTeachers();
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                filterTeachers(e.target.value.toLowerCase());
+            });
+        });
+        
+        function checkAuth() {
+            let session = getSession();
+            if (session) {
+                document.getElementById('accountNav').href = session.type === 'teacher' ? 'teacher.html' : 'profile.html';
+            }
+        }
+        
+        function loadTeachers() {
+            getTeachers().then(teachers => {
+                allTeachers = teachers || [];
+                renderTeachers(allTeachers);
+            }).catch(() => {
+                document.getElementById('teachersGrid').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>فشل التحميل</p></div>';
+            });
+        }
+        
+        function renderTeachers(teachers) {
+            let grid = document.getElementById('teachersGrid');
+            if (!teachers.length) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><p>لا يوجد أساتذة</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            teachers.forEach(t => {
+                let card = document.createElement('div');
+                card.className = 'teacher-card';
+                
+                let avatarHtml = t.avatar 
+                    ? `<img src="${t.avatar}" onerror="this.remove();this.parentElement.innerHTML='<i class=\'fas fa-user-circle\'></i>'">`
+                    : '<i class="fas fa-user-circle"></i>';
+                
+                card.innerHTML = `
+                    <div class="teacher-avatar">${avatarHtml}</div>
+                    <div class="teacher-name">${escapeHtml(t.name)}</div>
+                    <div class="teacher-subject">${escapeHtml(t.subject)}</div>
+                `;
+                card.onclick = () => location.href = 'channel.html?id=' + t.user_id;
+                grid.appendChild(card);
+            });
+        }
+        
+        function filterTeachers(term) {
+            let filtered = allTeachers.filter(t => 
+                t.name.toLowerCase().includes(term) || 
+                t.subject.toLowerCase().includes(term)
+            );
+            renderTeachers(filtered);
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            let div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

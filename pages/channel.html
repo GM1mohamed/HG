@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - قناة الأستاذ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .channel-header {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .channel-cover {
+            height: 120px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            position: relative;
+        }
+        
+        .channel-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 20px 20px;
+            margin-top: -40px;
+            position: relative;
+        }
+        
+        .channel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--surface);
+            overflow: hidden;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .channel-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .channel-avatar i {
+            font-size: 40px;
+            color: #fff;
+        }
+        
+        .channel-details h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .channel-details .subject {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .channel-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .sort-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .sort-btn {
+            background: var(--surface2);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        
+        .sort-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+        
+        @media (max-width: 600px) {
+            .channel-info {
+                padding: 0 12px 12px;
+                margin-top: -32px;
+            }
+            .channel-avatar {
+                width: 64px;
+                height: 64px;
+            }
+            .channel-avatar i {
+                font-size: 32px;
+            }
+            .channel-details h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GMube Edu</span>
+        </a>
+        <div>
+            <a href="teachers.html" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i> الأساتذة</a>
+            <a href="../index.html" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> الرئيسية</a>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="channel-header" id="channelHeader"></div>
+        
+        <div class="sort-bar">
+            <button class="sort-btn active" onclick="sortVideos('newest',this)">الأحدث</button>
+            <button class="sort-btn" onclick="sortVideos('popular',this)">الأكثر مشاهدة</button>
+        </div>
+        
+        <div class="videos-grid" id="videosGrid"></div>
+        <div id="emptyVideos" class="empty-state" style="display:none;"><i class="fas fa-video-slash"></i><p>لا توجد دروس</p></div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="../index.html" class="nav-item"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+        <a href="teachers.html" class="nav-item active"><i class="fas fa-users"></i><span>الأساتذة</span></a>
+        <a href="../login.html" class="nav-item" id="accountNav"><i class="fas fa-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/error-handler.js"></script>
+    <script>
+        let teacher = null;
+        let allVideos = [];
+        let currentSort = 'newest';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            let id = new URLSearchParams(location.search).get('id');
+            if (id) loadChannel(id);
+            else location.href = 'teachers.html';
+        });
+        
+        function checkAuth() {
+            let session = getSession();
+            if (session) {
+                document.getElementById('accountNav').href = session.type === 'teacher' ? 'teacher.html' : 'profile.html';
+            }
+        }
+        
+        function loadChannel(teacherId) {
+            api('teachers?user_id=eq.' + teacherId).then(teachers => {
+                if (!teachers || !teachers.length) return;
+                teacher = teachers[0];
+                
+                api('videos?user_id=eq.' + teacherId + '&order=created_at.desc').then(videos => {
+                    allVideos = videos || [];
+                    renderChannel();
+                    renderVideos(allVideos);
+                });
+            });
+        }
+        
+        function renderChannel() {
+            let coverHtml = teacher.cover 
+                ? `<img src="${teacher.cover}" onerror="this.remove()">`
+                : '';
+            
+            let avatarHtml = teacher.avatar
+                ? `<img src="${teacher.avatar}" onerror="this.remove();this.parentElement.innerHTML='<i class=\'fas fa-user-circle\'></i>'">`
+                : '<i class="fas fa-user-circle"></i>';
+            
+            let totalViews = 0;
+            allVideos.forEach(v => totalViews += v.views || 0);
+            
+            document.getElementById('channelHeader').innerHTML = `
+                <div class="channel-cover">${coverHtml}</div>
+                <div class="channel-info">
+                    <div class="channel-avatar">${avatarHtml}</div>
+                    <div class="channel-details">
+                        <h2>${escapeHtml(teacher.name)}</h2>
+                        <div class="subject"><i class="fas fa-book"></i> ${escapeHtml(teacher.subject)}</div>
+                        <div class="channel-stats">
+                            <span><i class="fas fa-video"></i> ${allVideos.length} درس</span>
+                            <span><i class="fas fa-eye"></i> ${formatNumber(totalViews)} مشاهدة</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderVideos(videos) {
+            let grid = document.getElementById('videosGrid');
+            let empty = document.getElementById('emptyVideos');
+            
+            if (!videos.length) {
+                grid.innerHTML = '';
+                grid.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            empty.style.display = 'none';
+            grid.innerHTML = '';
+            
+            videos.forEach(v => {
+                let card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        ${v.thumbnail ? `<img src="${v.thumbnail}" onerror="this.remove();this.parentElement.style.background='linear-gradient(135deg, #1a1a2e, #16213e)'">` : ''}
+                        ${!v.thumbnail ? '<i class="fas fa-play-circle"></i>' : ''}
+                        <div class="play-overlay"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${escapeHtml(v.title || 'بدون عنوان')}</div>
+                        <div class="video-meta">
+                            <span><i class="fas fa-tag"></i> ${escapeHtml(v.category)}</span>
+                            <span><i class="fas fa-eye"></i> ${formatNumber(v.views || 0)}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => location.href = 'watch.html?id=' + v.id;
+                grid.appendChild(card);
+            });
+        }
+        
+        function sortVideos(type, btn) {
+            currentSort = type;
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let sorted = [...allVideos];
+            if (type === 'popular') {
+                sorted.sort((a, b) => (b.views || 0) - (a.views || 0));
+            } else {
+                sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+            renderVideos(sorted);
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            let div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function formatNumber(n) {
+            if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+    </script>
+</body>
+</html>
