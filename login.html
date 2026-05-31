@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - تسجيل الدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="login-container">
+            <div class="logo-section">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>GMube Edu</h2>
+                <p>مرحباً بك في منصتك التعليمية</p>
+            </div>
+            
+            <div class="login-tabs">
+                <div class="login-tab active" data-type="student" onclick="switchTab('student',this)">
+                    <i class="fas fa-user-graduate"></i> طالب
+                </div>
+                <div class="login-tab" data-type="teacher" onclick="switchTab('teacher',this)">
+                    <i class="fas fa-chalkboard-user"></i> معلم
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> الاسم</label>
+                <input type="text" id="name" placeholder="أدخل اسمك بالكامل">
+            </div>
+            
+            <div class="form-group password-group">
+                <label><i class="fas fa-lock"></i> الرمز السري</label>
+                <input type="password" id="secret" placeholder="أدخل الرمز السري">
+                <i class="fas fa-eye password-toggle" onclick="togglePass()"></i>
+            </div>
+            
+            <button class="btn" onclick="handleLogin()" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </button>
+            
+            <div id="error" class="alert alert-error" style="display:none; margin-top: 16px;"></div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-arrow-right"></i> العودة إلى الرئيسية
+                </a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <p style="font-size: 12px; color: var(--text-muted);">ليس لديك حساب؟ تواصل مع الإدارة</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/error-handler.js"></script>
+    <script>
+        let loginType = 'student';
+        
+        if (getSession()) {
+            location.href = getSession().type === 'teacher' ? 'pages/teacher.html' : 'index.html';
+        }
+        
+        function switchTab(type, btn) {
+            loginType = type;
+            document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            hideError();
+        }
+        
+        function togglePass() {
+            let input = document.getElementById('secret');
+            let icon = document.querySelector('.password-toggle');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+        
+        function showError(msg) {
+            let el = document.getElementById('error');
+            el.textContent = msg;
+            el.style.display = 'flex';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        async function handleLogin() {
+            let name = document.getElementById('name').value.trim();
+            let secret = document.getElementById('secret').value.trim();
+            
+            hideError();
+            
+            if (!name) { showError('الرجاء إدخال الاسم'); return; }
+            if (!secret) { showError('الرجاء إدخال الرمز السري'); return; }
+            
+            let btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+            
+            try {
+                let session = await login(loginType, name, secret);
+                location.href = session.type === 'teacher' ? 'pages/teacher.html' : 'index.html';
+            } catch(e) {
+                showError(e.message || 'بيانات الدخول غير صحيحة');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
+            }
+        }
+        
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleLogin();
+        });
+    </script>
+</body>
+</html>

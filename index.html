@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - المنصة التعليمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* تصميم محسن وأنيق */
+        .welcome {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .welcome::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(76,175,80,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .welcome::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(33,150,243,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .welcome h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .welcome p {
+            color: var(--text-muted);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.85;
+        }
+        
+        .section {
+            padding: 0 20px;
+            margin-bottom: 28px;
+        }
+        
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 18px;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .section-title h3 {
+            font-size: 19px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title h3 i {
+            color: var(--primary);
+            font-size: 20px;
+        }
+        
+        .section-title span, .section-title a {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        
+        .section-title a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        
+        /* بطاقات الفيديو - تصميم محسن */
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        
+        .video-card {
+            background: var(--surface);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .video-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(76,175,80,0.3);
+            box-shadow: 0 8px 24px rgba(76,175,80,0.15);
+        }
+        
+        .video-thumb {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .video-card:hover .video-thumb img {
+            transform: scale(1.05);
+        }
+        
+        .video-thumb > i {
+            font-size: 44px;
+            color: rgba(255,255,255,0.7);
+            transition: 0.2s;
+        }
+        
+        .video-thumb .play {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0);
+            transition: all 0.3s ease;
+        }
+        
+        .video-card:hover .play {
+            background: rgba(0,0,0,0.4);
+        }
+        
+        .video-thumb .play i {
+            font-size: 48px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            color: #fff;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+        }
+        
+        .video-card:hover .play i {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .video-info {
+            padding: 12px 14px 14px;
+        }
+        
+        .video-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+            color: #e0e0e0;
+        }
+        
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .video-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .video-meta span i {
+            font-size: 13px;
+            color: var(--primary);
+        }
+        
+        /* قائمة الأساتذة */
+        .teachers-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-behavior: smooth;
+        }
+        
+        .teachers-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .teachers-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .teachers-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .teacher-item {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 110px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .teacher-item:hover {
+            transform: translateY(-3px);
+            border-color: rgba(76,175,80,0.3);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.12);
+        }
+        
+        .teacher-item img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid rgba(76,175,80,0.3);
+            transition: 0.3s;
+        }
+        
+        .teacher-item:hover img {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(76,175,80,0.3);
+        }
+        
+        .teacher-item i {
+            font-size: 44px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: block;
+            transition: 0.3s;
+        }
+        
+        .teacher-item:hover i {
+            color: #66BB6A;
+        }
+        
+        .teacher-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        
+        .teacher-subject {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        /* أزرار التصنيف */
+        .categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 8px 20px;
+            margin-bottom: 24px;
+        }
+        
+        .categories::-webkit-scrollbar {
+            height: 0;
+        }
+        
+        .cat-btn {
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-secondary);
+            padding: 8px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cat-btn:hover {
+            background: rgba(76,175,80,0.1);
+            border-color: rgba(76,175,80,0.3);
+            color: #fff;
+        }
+        
+        .cat-btn.active {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 56px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            display: block;
+        }
+        
+        .empty-state p {
+            font-size: 15px;
+        }
+        
+        /* تدرج لطيف على الصورة المصغرة عند عدم وجود صورة */
+        .video-thumb .fa-play-circle {
+            opacity: 0.6;
+        }
+        
+        @media (max-width: 600px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .section, .categories, .welcome {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+            .welcome {
+                margin: 14px;
+                padding: 22px 18px;
+            }
+            .welcome h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GMube Edu</span>
+        </a>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="ابحث عن درس أو أستاذ...">
+            <i class="fas fa-search"></i>
+        </div>
+        <div id="authButtons">
+            <a href="login.html" class="btn btn-sm" id="loginBtn">دخول</a>
+            <div id="userInfo" style="display:none; align-items:center; gap:8px;">
+                <span id="userName" style="font-size:13px;"></span>
+                <button onclick="logout()" class="btn btn-secondary btn-sm">خروج</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="welcome">
+        <h1>مرحباً بك في GMube Edu</h1>
+        <p>منصتك التعليمية الشاملة - تعلم مع أفضل الأساتذة</p>
+    </div>
+
+    <div class="categories" id="categoriesBar"></div>
+
+    <div class="section" id="teachersSection">
+        <div class="section-title">
+            <h3><i class="fas fa-chalkboard-teacher"></i> الأساتذة المميزون</h3>
+            <a href="pages/teachers.html">عرض الكل <i class="fas fa-arrow-left" style="font-size:10px;"></i></a>
+        </div>
+        <div class="teachers-scroll" id="teachersScroll"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">
+            <h3><i class="fas fa-play-circle"></i> أحدث الدروس</h3>
+            <span id="videoCount"></span>
+        </div>
+        <div class="videos-grid" id="videosGrid"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item active"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+        <a href="pages/teachers.html" class="nav-item"><i class="fas fa-users"></i><span>الأساتذة</span></a>
+        <a href="login.html" class="nav-item" id="accountNav"><i class="fas fa-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/error-handler.js"></script>
+    <script>
+        let currentCategory = 'الكل';
+        let allVideos = [];
+        let searchTimeout;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadTeachers();
+            loadVideos();
+            checkAuth();
+            
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => filterVideos(e.target.value.toLowerCase()), 250);
+            });
+        });
+        
+        function checkAuth() {
+            let session = getSession();
+            if (session) {
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('userInfo').style.display = 'flex';
+                document.getElementById('userName').textContent = session.name;
+                document.getElementById('accountNav').href = session.type === 'teacher' ? 'pages/teacher.html' : 'pages/profile.html';
+            }
+        }
+        
+        function loadCategories() {
+            let container = document.getElementById('categoriesBar');
+            CATEGORIES.forEach((cat, i) => {
+                let btn = document.createElement('button');
+                btn.textContent = cat;
+                btn.className = 'cat-btn' + (i === 0 ? ' active' : '');
+                btn.onclick = () => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = cat;
+                    document.getElementById('searchInput').value = '';
+                    filterVideos('');
+                };
+                container.appendChild(btn);
+            });
+        }
+        
+        function loadTeachers() {
+            getTeachers().then(teachers => {
+                let container = document.getElementById('teachersScroll');
+                if (!teachers || !teachers.length) {
+                    document.getElementById('teachersSection').style.display = 'none';
+                    return;
+                }
+                container.innerHTML = '';
+                teachers.slice(0, 8).forEach(t => {
+                    let div = document.createElement('div');
+                    div.className = 'teacher-item';
+                    div.innerHTML = t.avatar ? 
+                        `<img src="${t.avatar}" onerror="this.remove();this.nextElementSibling.style.display='block';">` : '';
+                    div.innerHTML += t.avatar ? '' : '<i class="fas fa-user-circle"></i>';
+                    div.innerHTML += `<div class="teacher-name">${escapeHtml(t.name)}</div>
+                                     <div class="teacher-subject">${escapeHtml(t.subject)}</div>`;
+                    div.onclick = () => location.href = 'pages/channel.html?id=' + t.user_id;
+                    container.appendChild(div);
+                });
+            }).catch(() => {});
+        }
+        
+        function loadVideos() {
+            document.getElementById('videosGrid').innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>جاري تحميل الدروس...</p></div>';
+            
+            getVideos('الكل').then(videos => {
+                allVideos = videos || [];
+                renderVideos(allVideos);
+                document.getElementById('videoCount').textContent = allVideos.length + ' درس';
+            }).catch(() => {
+                document.getElementById('videosGrid').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>فشل تحميل الدروس</p></div>';
+            });
+        }
+        
+        function renderVideos(videos) {
+            let container = document.getElementById('videosGrid');
+            if (!videos.length) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-video-slash"></i><p>لا توجد دروس متاحة</p></div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            videos.forEach(v => {
+                let card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="video-thumb">
+                        ${v.thumbnail ? `<img src="${v.thumbnail}" onerror="this.remove();this.nextElementSibling.style.display='flex';">` : ''}
+                        ${!v.thumbnail ? '<i class="fas fa-play-circle"></i>' : ''}
+                        <div class="play"><i class="fas fa-play"></i></div>
+                        ${v.grade ? `<span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.75);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:500;">${escapeHtml(v.grade)}</span>` : ''}
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${escapeHtml(v.title || 'بدون عنوان')}</div>
+                        <div class="video-meta">
+                            <span><i class="fas fa-user"></i> ${escapeHtml(v.user_name || '')}</span>
+                            <span><i class="fas fa-eye"></i> ${formatNumber(v.views || 0)}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => location.href = 'pages/watch.html?id=' + v.id;
+                container.appendChild(card);
+            });
+        }
+        
+        function filterVideos(term) {
+            let filtered = allVideos.filter(v => currentCategory === 'الكل' || v.category === currentCategory);
+            if (term) {
+                filtered = filtered.filter(v => 
+                    (v.title || '').toLowerCase().includes(term) ||
+                    (v.user_name || '').toLowerCase().includes(term)
+                );
+            }
+            renderVideos(filtered);
+            document.getElementById('videoCount').textContent = filtered.length + ' درس';
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            let div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function formatNumber(n) {
+            if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+        
+        function logout() {
+            localStorage.removeItem('gmube_edu_session');
+            location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
