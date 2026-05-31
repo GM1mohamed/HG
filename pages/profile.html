@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMube Edu - حسابي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .profile-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-avatar i {
+            font-size: 44px;
+            color: #fff;
+        }
+        
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .profile-role {
+            color: var(--primary);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .profile-detail {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        
+        .info-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .info-card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .saved-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--surface2);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        
+        .saved-item:hover {
+            background: var(--surface3);
+        }
+        
+        .secret-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .secret-form input {
+            flex: 1;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="../index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>GMube Edu</span>
+        </a>
+        <div>
+            <a href="../index.html" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> الرئيسية</a>
+            <button onclick="logout()" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> خروج</button>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div id="profileContent">
+            <div class="loading-spinner" style="text-align:center;padding:40px;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>جاري التحميل...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="../index.html" class="nav-item"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+        <a href="teachers.html" class="nav-item"><i class="fas fa-users"></i><span>الأساتذة</span></a>
+        <a href="profile.html" class="nav-item active"><i class="fas fa-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/error-handler.js"></script>
+    <script>
+        let session = getSession();
+        if (!session) {
+            alert('يرجى تسجيل الدخول');
+            location.href = '../login.html';
+        }
+        
+        let userData = null;
+        
+        document.addEventListener('DOMContentLoaded', loadProfile);
+        
+        async function loadProfile() {
+            let table = session.type === 'teacher' ? 'teachers' : 'students';
+            let data = await api(`${table}?user_id=eq.${session.user_id}`);
+            if (data && data.length) {
+                userData = data[0];
+                renderProfile();
+                loadSavedVideos();
+            }
+        }
+        
+        function renderProfile() {
+            let roleText = session.type === 'teacher' ? 'معلم' : 'طالب';
+            let roleIcon = session.type === 'teacher' ? 'fa-chalkboard-teacher' : 'fa-user-graduate';
+            let detail = session.type === 'teacher' ? userData.subject : userData.grade;
+            
+            document.getElementById('profileContent').innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-avatar"><i class="fas ${roleIcon}"></i></div>
+                    <div class="profile-name">${escapeHtml(session.name)}</div>
+                    <div class="profile-role"><i class="fas fa-circle" style="font-size:6px;"></i> ${roleText}</div>
+                    <div class="profile-detail"><i class="fas ${session.type === 'teacher' ? 'fa-book' : 'fa-graduation-cap'}"></i> ${escapeHtml(detail)}</div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-bookmark"></i> الدروس المحفوظة</h3>
+                    <div id="savedList">جاري التحميل...</div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-lock"></i> تغيير الرمز السري</h3>
+                    <div class="secret-form">
+                        <input type="password" id="currentSecret" placeholder="الرمز الحالي">
+                        <input type="password" id="newSecret" placeholder="الرمز الجديد">
+                        <input type="password" id="confirmSecret" placeholder="تأكيد الرمز">
+                        <button class="btn btn-sm" onclick="changeSecret()">تغيير</button>
+                    </div>
+                    <div id="secretMsg" style="margin-top:8px;font-size:12px;"></div>
+                </div>
+            `;
+        }
+        
+        async function loadSavedVideos() {
+            let savedIds = JSON.parse(localStorage.getItem('saved_videos') || '[]');
+            if (!savedIds.length) {
+                document.getElementById('savedList').innerHTML = '<p style="color:var(--text-muted);">لا توجد دروس محفوظة</p>';
+                return;
+            }
+            
+            let filters = savedIds.map(id => `id=eq.${id}`).join('&or=');
+            let videos = await api(`videos?or=(${filters})`);
+            
+            if (!videos || !videos.length) {
+                document.getElementById('savedList').innerHTML = '<p style="color:var(--text-muted);">لا توجد دروس محفوظة</p>';
+                return;
+            }
+            
+            let html = '';
+            videos.forEach(v => {
+                html += `
+                    <div class="saved-item" onclick="location.href='watch.html?id=${v.id}'">
+                        <div>
+                            <div style="font-weight:600;">${escapeHtml(v.title)}</div>
+                            <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(v.user_name)} • ${v.views || 0} مشاهدة</div>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();removeSaved(${v.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+            document.getElementById('savedList').innerHTML = html;
+        }
+        
+        function removeSaved(videoId) {
+            let saved = JSON.parse(localStorage.getItem('saved_videos') || '[]');
+            let index = saved.indexOf(videoId);
+            if (index !== -1) saved.splice(index, 1);
+            localStorage.setItem('saved_videos', JSON.stringify(saved));
+            loadSavedVideos();
+        }
+        
+        async function changeSecret() {
+            let current = document.getElementById('currentSecret').value.trim();
+            let newPass = document.getElementById('newSecret').value.trim();
+            let confirm = document.getElementById('confirmSecret').value.trim();
+            let msg = document.getElementById('secretMsg');
+            
+            if (!current || !newPass || !confirm) {
+                msg.innerHTML = '<span style="color:var(--danger);">املأ جميع الحقول</span>';
+                return;
+            }
+            if (newPass !== confirm) {
+                msg.innerHTML = '<span style="color:var(--danger);">الرموز غير متطابقة</span>';
+                return;
+            }
+            if (current !== userData.secret) {
+                msg.innerHTML = '<span style="color:var(--danger);">الرمز الحالي غير صحيح</span>';
+                return;
+            }
+            
+            let table = session.type === 'teacher' ? 'teachers' : 'students';
+            await api(`${table}?id=eq.${userData.id}`, 'PATCH', { secret: newPass });
+            msg.innerHTML = '<span style="color:var(--primary);">تم تغيير الرمز بنجاح</span>';
+            document.getElementById('currentSecret').value = '';
+            document.getElementById('newSecret').value = '';
+            document.getElementById('confirmSecret').value = '';
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            let div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function logout() {
+            localStorage.removeItem('gmube_edu_session');
+            location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>
