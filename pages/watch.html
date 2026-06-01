@@ -7,153 +7,343 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    
+
     <!-- Plyr CSS -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    
+
     <style>
+        :root {
+            --primary: #6C5CE7;
+            --primary-glow: rgba(108, 92, 231, 0.3);
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface2: rgba(255, 255, 255, 0.06);
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --warning: #fbbf24;
+            --radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .video-player-wrapper {
-            background: #000;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
             border-radius: var(--radius);
             overflow: hidden;
             aspect-ratio: 16 / 9;
             width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
         }
-        
+
+        .video-player-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--primary), #a78bfa, var(--primary));
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.2; }
+            100% { opacity: 0.5; }
+        }
+
         /* إخفاء شعار يوتيوب بالكامل */
         .plyr--youtube .plyr__control[data-plyr="youtube-logo"] {
             display: none !important;
         }
-        
+
         /* تخصيص ألوان Plyr */
         .plyr--video .plyr__control--overlaid,
         .plyr--video .plyr__control:hover,
         .plyr--video .plyr__control[aria-expanded="true"] {
             background: var(--primary) !important;
+            box-shadow: 0 0 20px var(--primary-glow);
         }
-        
+
         .plyr--video .plyr__progress__buffer {
-            background: var(--primary) !important;
+            background: rgba(108, 92, 231, 0.3) !important;
         }
-        
+
         .plyr__progress--played,
         .plyr__volume--display {
             color: var(--primary) !important;
         }
-        
+
+        .plyr--video {
+            border-radius: var(--radius);
+        }
+
+        .video-info-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .video-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .action-buttons {
             display: flex;
-            gap: 8px;
-            margin: 16px 0;
+            gap: 10px;
+            margin: 20px 0;
             flex-wrap: wrap;
         }
-        
+
         .action-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background: var(--surface2);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
-            font-size: 13px;
-            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--transition);
+            backdrop-filter: blur(10px);
         }
-        
-        .action-btn:hover, .action-btn.liked {
+
+        .action-btn:hover {
             background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--primary-glow);
         }
-        
+
+        .action-btn.liked {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #ef4444;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+
         .video-stats {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
-            margin: 12px 0;
+            margin: 16px 0;
         }
-        
+
         .stat-badge {
-            background: var(--surface2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            background: rgba(108, 92, 231, 0.1);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            transition: all var(--transition);
+            backdrop-filter: blur(10px);
         }
-        
-        .comment-form, .comment-item {
-            background: var(--surface);
+
+        .stat-badge:hover {
+            background: rgba(108, 92, 231, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .stat-badge i {
+            color: var(--primary);
+        }
+
+        .comment-form {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
             border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.04);
+            padding: 24px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
         }
-        
+
+        .comment-item {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .comment-item:hover {
+            border-color: rgba(108, 92, 231, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .star-rating {
+            display: inline-flex;
+            gap: 6px;
+        }
+
         .star-rating i {
             cursor: pointer;
             color: var(--text-muted);
-            font-size: 22px;
-            margin-left: 4px;
+            font-size: 24px;
+            transition: all 0.2s ease;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0);
         }
-        
-        .star-rating i:hover, .star-rating i.active {
+
+        .star-rating i:hover {
+            transform: scale(1.2);
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .star-rating i.active,
+        .star-rating i:hover {
             color: var(--warning);
         }
-        
+
         textarea {
             width: 100%;
-            padding: 10px;
-            background: var(--surface2);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             color: var(--text);
             font-family: 'Cairo', sans-serif;
-            margin: 10px 0;
+            font-size: 14px;
+            margin: 16px 0;
             resize: vertical;
+            transition: all var(--transition);
         }
-        
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
         .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 60px 40px;
             color: var(--text-muted);
+            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.04) 100%);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
         .btn-sm {
-            padding: 6px 14px;
-            font-size: 12px;
-            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 14px;
+            border-radius: 25px;
             width: auto;
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: 'Cairo', sans-serif;
         }
-        
+
+        .btn-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--primary-glow);
+        }
+
         .comment-header {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        
-        .comment-text {
+            align-items: center;
             font-size: 13px;
-            margin-top: 8px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
+
+        .comment-header strong {
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            margin-top: 12px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
         .loading-spinner {
             text-align: center;
-            padding: 40px;
+            padding: 80px 40px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.04) 100%);
+            border-radius: var(--radius);
         }
-        
+
         .loading-spinner i {
-            font-size: 40px;
+            font-size: 48px;
             animation: spin 1s linear infinite;
+            color: var(--primary);
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* تحسينات للأجهزة المحمولة */
+        @media (max-width: 768px) {
+            .video-info-card {
+                padding: 16px;
+            }
+
+            .video-title {
+                font-size: 18px;
+            }
+
+            .action-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+
+            .stat-badge {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -193,14 +383,14 @@
     <script src="../js/auth.js"></script>
     <script src="../js/error-handler.js"></script>
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    
+
     <script>
         var video = null;
         var session = getSession();
         var rating = 0;
         var liked = false;
         var plyrPlayer = null;
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             updateAccountNav();
             var id = new URLSearchParams(window.location.search).get('id');
@@ -210,7 +400,7 @@
                 location.href = '../index.html';
             }
         });
-        
+
         function updateAccountNav() {
             if (session) {
                 var navLink = document.getElementById('accountNav');
@@ -219,7 +409,7 @@
                 }
             }
         }
-        
+
         function loadVideo(id) {
             getVideoById(id).then(function(v) {
                 if (!v) {
@@ -237,11 +427,11 @@
                 showError('فشل تحميل الدرس');
             });
         }
-        
+
         function showError(msg) {
             document.getElementById('watchContent').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>' + msg + '</p></div>';
         }
-        
+
         function checkIfLiked() {
             if (!session) return;
             var likedVideos = JSON.parse(localStorage.getItem('liked_videos') || '[]');
@@ -251,7 +441,7 @@
                 likeBtn.classList.add('liked');
             }
         }
-        
+
         function extractYouTubeId(url) {
             if (!url) return null;
             var patterns = [
@@ -266,12 +456,12 @@
             }
             return null;
         }
-        
+
         function initPlyr(videoId) {
             if (plyrPlayer) {
                 plyrPlayer.destroy();
             }
-            
+
             var playerElement = document.querySelector('#plyr-player');
             if (playerElement) {
                 plyrPlayer = new Plyr(playerElement, {
@@ -302,16 +492,16 @@
                 });
             }
         }
-        
+
         function getVideoHtml() {
             var sourceType = video.source_type || 'youtube';
             var videoUrl = video.url || '';
             var playerHtml = '';
-            
+
             // معالجة YouTube (بدون علامة المصدر)
             if (sourceType === 'youtube' || videoUrl.indexOf('youtube.com') !== -1 || videoUrl.indexOf('youtu.be') !== -1) {
                 var videoId = extractYouTubeId(videoUrl);
-                
+
                 if (videoId) {
                     playerHtml = '<div id="plyr-player" data-plyr-provider="youtube" data-plyr-embed-id="' + videoId + '"></div>';
                     return {
@@ -359,20 +549,20 @@
                 };
             }
         }
-        
+
         function renderVideo() {
             var playerData = getVideoHtml();
-            
+
             var starsHtml = '';
             for (var s = 1; s <= 5; s++) {
                 starsHtml += '<i class="fas fa-star" data-v="' + s + '"></i>';
             }
-            
+
             var container = document.getElementById('watchContent');
             container.innerHTML = 
                 '<div class="video-player-wrapper">' + playerData.html + '</div>' +
-                '<div style="margin-top:16px">' +
-                    '<h2 style="font-size:18px;margin-bottom:8px;">' + esc(video.title || 'بدون عنوان') + '</h2>' +
+                '<div class="video-info-card">' +
+                    '<h2 class="video-title">' + esc(video.title || 'بدون عنوان') + '</h2>' +
                     '<div class="video-stats">' +
                         '<span class="stat-badge"><i class="fas fa-user-circle"></i> ' + esc(video.user_name || '') + '</span>' +
                         '<span class="stat-badge"><i class="fas fa-book"></i> ' + esc(video.category || '') + '</span>' +
@@ -393,26 +583,26 @@
                     '</div>' +
                 '</div>' +
                 '<div class="comment-form">' +
-                    '<h4 style="margin-bottom:10px"><i class="fas fa-comment"></i> أضف تعليق وتقييم</h4>' +
+                    '<h4 class="section-title"><i class="fas fa-comment"></i> أضف تعليق وتقييم</h4>' +
                     '<div class="star-rating" id="stars">' + starsHtml + '</div>' +
                     '<textarea id="commentText" placeholder="اكتب تعليقك..." rows="3"></textarea>' +
-                    '<button class="btn btn-sm" onclick="addComment()"><i class="fas fa-paper-plane"></i> إرسال</button>' +
+                    '<button class="btn-sm" onclick="addComment()"><i class="fas fa-paper-plane"></i> إرسال</button>' +
                 '</div>' +
                 '<div id="commentsList"></div>';
-            
+
             if (playerData.needsInit && playerData.videoId) {
                 setTimeout(function() {
                     initPlyr(playerData.videoId);
                 }, 100);
             }
-            
+
             initStars();
             var likeBtn = document.getElementById('likeBtn');
             if (likeBtn && liked) {
                 likeBtn.classList.add('liked');
             }
         }
-        
+
         function initStars() {
             var stars = document.querySelectorAll('#stars i');
             for (var i = 0; i < stars.length; i++) {
@@ -434,25 +624,25 @@
             }
             document.getElementById('stars').onmouseleave = updateStars;
         }
-        
+
         function updateStars() {
             var stars = document.querySelectorAll('#stars i');
             for (var i = 0; i < stars.length; i++) {
                 stars[i].style.color = i < rating ? 'var(--warning)' : 'var(--text-muted)';
             }
         }
-        
+
         function toggleLike() {
             if (!session) {
                 alert('يرجى تسجيل الدخول');
                 return;
             }
-            
+
             var btn = document.getElementById('likeBtn');
             var count = video.likes || 0;
             var likedVideos = JSON.parse(localStorage.getItem('liked_videos') || '[]');
             var index = likedVideos.indexOf(video.id);
-            
+
             if (liked) {
                 count--;
                 btn.classList.remove('liked');
@@ -466,9 +656,9 @@
                 liked = true;
                 likedVideos.push(video.id);
             }
-            
+
             localStorage.setItem('liked_videos', JSON.stringify(likedVideos));
-            
+
             updateVideoLikes(video.id, count).then(function() {
                 video.likes = count;
                 document.getElementById('likesCount').textContent = count;
@@ -476,13 +666,13 @@
                 alert('فشل تحديث الإعجابات: ' + e.message);
             });
         }
-        
+
         function saveVideo() {
             if (!session) {
                 alert('يرجى تسجيل الدخول');
                 return;
             }
-            
+
             var saved = JSON.parse(localStorage.getItem('saved_videos') || '[]');
             if (saved.indexOf(video.id) !== -1) {
                 alert('تم حفظ هذا الدرس مسبقاً');
@@ -492,7 +682,7 @@
             localStorage.setItem('saved_videos', JSON.stringify(saved));
             alert('تم حفظ الدرس');
         }
-        
+
         function shareVideo() {
             var url = location.href;
             if (navigator.share) {
@@ -503,13 +693,13 @@
                 });
             }
         }
-        
+
         function addComment() {
             if (!session) {
                 alert('يرجى تسجيل الدخول');
                 return;
             }
-            
+
             var text = document.getElementById('commentText').value.trim();
             if (!text) {
                 alert('اكتب تعليقاً');
@@ -519,7 +709,7 @@
                 alert('اختر تقييماً');
                 return;
             }
-            
+
             addComment(video.id, session.user_id, session.name, text, rating).then(function() {
                 return getComments(video.id).then(function(comments) {
                     if (comments && comments.length > 0) {
@@ -550,22 +740,22 @@
                 alert('فشل إضافة التعليق: ' + e.message);
             });
         }
-        
+
         function loadComments() {
             getComments(video.id).then(function(comments) {
                 var container = document.getElementById('commentsList');
-                
+
                 if (!comments || comments.length === 0) {
                     container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد تعليقات بعد</p>';
                     return;
                 }
-                
+
                 var html = '';
                 for (var i = 0; i < comments.length; i++) {
                     var c = comments[i];
                     var starsHtml = '';
                     for (var s = 1; s <= 5; s++) {
-                        starsHtml += '<i class="fas fa-star" style="color:' + (s <= c.rating ? 'var(--warning)' : 'var(--text-muted)') + ';font-size:11px"></i>';
+                        starsHtml += '<i class="fas fa-star" style="color:' + (s <= c.rating ? 'var(--warning)' : 'var(--text-muted)') + ';font-size:12px;margin-left:2px;"></i>';
                     }
                     html += '<div class="comment-item">' +
                                 '<div class="comment-header">' +
@@ -579,20 +769,20 @@
                 container.innerHTML = html;
             });
         }
-        
+
         function esc(t) {
             if (!t) return '';
             var d = document.createElement('div');
             d.textContent = t;
             return d.innerHTML;
         }
-        
+
         function fmt(n) {
             if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
             if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
             return n.toString();
         }
-        
+
         function fmtDate(d) {
             if (!d) return '';
             try {
