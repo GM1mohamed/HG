@@ -13,90 +13,225 @@
 
     <style>
         :root {
-            --primary: #6C5CE7;
-            --primary-glow: rgba(108, 92, 231, 0.3);
-            --surface: rgba(255, 255, 255, 0.03);
-            --surface2: rgba(255, 255, 255, 0.06);
-            --text: #ffffff;
-            --text-muted: #94a3b8;
-            --warning: #fbbf24;
-            --radius: 16px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --player-radius: 20px;
         }
 
         .video-player-wrapper {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-            border-radius: var(--radius);
+            background: #000;
+            border-radius: var(--player-radius);
             overflow: hidden;
             aspect-ratio: 16 / 9;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            max-width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
             position: relative;
+            margin: 0 auto;
         }
 
+        /* إطار متوهج حول المشغل */
         .video-player-wrapper::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: var(--radius);
-            background: linear-gradient(135deg, var(--primary), #a78bfa, var(--primary));
+            inset: -3px;
+            border-radius: calc(var(--player-radius) + 3px);
+            background: linear-gradient(135deg, 
+                #6C5CE7, #a78bfa, #6C5CE7, #a78bfa
+            );
+            background-size: 300% 300%;
             z-index: -1;
-            opacity: 0.3;
-            animation: borderGlow 3s ease-in-out infinite alternate;
+            opacity: 0.6;
+            animation: gradientRotate 4s ease infinite;
         }
 
-        @keyframes borderGlow {
-            0% { opacity: 0.2; }
-            100% { opacity: 0.5; }
+        @keyframes gradientRotate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        /* إخفاء شعار يوتيوب بالكامل */
+        /* Plyr overrides - تخصيص شامل للمشغل */
+        .plyr {
+            border-radius: var(--player-radius) !important;
+            font-family: 'Cairo', sans-serif !important;
+            direction: ltr !important; /* Plyr يعمل بشكل أفضل مع LTR */
+        }
+
+        .plyr--video {
+            border-radius: var(--player-radius) !important;
+        }
+
+        .plyr__video-wrapper {
+            border-radius: var(--player-radius) !important;
+        }
+
+        .plyr__poster {
+            border-radius: var(--player-radius) !important;
+            background-size: cover !important;
+        }
+
+        /* زر التشغيل الكبير */
+        .plyr__control--overlaid {
+            background: linear-gradient(135deg, #6C5CE7, #a78bfa) !important;
+            border-radius: 50% !important;
+            width: 80px !important;
+            height: 80px !important;
+            box-shadow: 0 0 40px rgba(108, 92, 231, 0.6) !important;
+            transition: all 0.3s ease !important;
+            opacity: 0.9 !important;
+        }
+
+        .plyr__control--overlaid:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 60px rgba(108, 92, 231, 0.8) !important;
+            opacity: 1 !important;
+        }
+
+        .plyr__control--overlaid svg {
+            width: 32px !important;
+            height: 32px !important;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) !important;
+        }
+
+        /* شريط التحكم السفلي */
+        .plyr__controls {
+            background: linear-gradient(to top, 
+                rgba(0, 0, 0, 0.95) 0%, 
+                rgba(0, 0, 0, 0.7) 100%
+            ) !important;
+            backdrop-filter: blur(20px) !important;
+            padding: 10px 15px !important;
+            border-radius: 0 0 var(--player-radius) var(--player-radius) !important;
+            gap: 8px !important;
+        }
+
+        /* أزرار التحكم */
+        .plyr__control {
+            color: #fff !important;
+            transition: all 0.2s ease !important;
+            border-radius: 8px !important;
+        }
+
+        .plyr__control:hover {
+            background: rgba(108, 92, 231, 0.3) !important;
+            color: #fff !important;
+        }
+
+        /* شريط التقدم */
+        .plyr__progress__container {
+            flex: 1 !important;
+        }
+
+        .plyr__progress input[type="range"] {
+            --plyr-range-track-height: 6px;
+            height: 6px !important;
+            border-radius: 3px !important;
+        }
+
+        .plyr__progress__buffer {
+            background: rgba(108, 92, 231, 0.3) !important;
+            border-radius: 3px !important;
+        }
+
+        .plyr__progress--played {
+            background: linear-gradient(to right, #6C5CE7, #a78bfa) !important;
+            border-radius: 3px !important;
+        }
+
+        .plyr__tooltip {
+            background: rgba(0, 0, 0, 0.9) !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            padding: 4px 10px !important;
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        /* مؤشر شريط التقدم */
+        .plyr__progress input[type="range"]::-webkit-slider-thumb {
+            width: 18px !important;
+            height: 18px !important;
+            background: #fff !important;
+            border: 3px solid #6C5CE7 !important;
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.5) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .plyr__progress input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2) !important;
+            box-shadow: 0 0 25px rgba(108, 92, 231, 0.8) !important;
+        }
+
+        /* مستوى الصوت */
+        .plyr__volume input[type="range"] {
+            --plyr-range-track-height: 4px;
+        }
+
+        .plyr__volume input[type="range"]::-webkit-slider-thumb {
+            width: 14px !important;
+            height: 14px !important;
+            background: #6C5CE7 !important;
+            border: 2px solid #fff !important;
+        }
+
+        /* الوقت */
+        .plyr__time {
+            color: #ccc !important;
+            font-size: 13px !important;
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        /* قائمة الإعدادات */
+        .plyr__menu__container {
+            background: rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 12px !important;
+            font-family: 'Cairo', sans-serif !important;
+            min-width: 200px !important;
+        }
+
+        .plyr__menu__container button {
+            color: #fff !important;
+            padding: 10px 15px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .plyr__menu__container button:hover {
+            background: rgba(108, 92, 231, 0.3) !important;
+        }
+
+        /* إخفاء شعار يوتيوب */
         .plyr--youtube .plyr__control[data-plyr="youtube-logo"] {
             display: none !important;
         }
 
-        /* تخصيص ألوان Plyr */
-        .plyr--video .plyr__control--overlaid,
-        .plyr--video .plyr__control:hover,
-        .plyr--video .plyr__control[aria-expanded="true"] {
-            background: var(--primary) !important;
-            box-shadow: 0 0 20px var(--primary-glow);
+        /* فيديو عادي (غير Plyr) */
+        video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            border-radius: var(--player-radius) !important;
+            background: #000 !important;
         }
 
-        .plyr--video .plyr__progress__buffer {
-            background: rgba(108, 92, 231, 0.3) !important;
+        /* تخصيص Controls الفيديو العادي */
+        video::-webkit-media-controls-panel {
+            background: linear-gradient(to top, 
+                rgba(0, 0, 0, 0.9) 0%, 
+                rgba(0, 0, 0, 0.5) 100%
+            ) !important;
         }
 
-        .plyr__progress--played,
-        .plyr__volume--display {
-            color: var(--primary) !important;
+        video::-webkit-media-controls-play-button {
+            filter: brightness(1.2) !important;
         }
 
-        .plyr--video {
-            border-radius: var(--radius);
-        }
-
+        /* تحسينات الحاوية العامة */
         .video-info-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
-            border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
             padding: 24px;
             margin-top: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
-        }
-
-        .video-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .action-buttons {
@@ -110,28 +245,27 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--surface2);
+            background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text);
+            color: #fff;
             padding: 10px 20px;
             border-radius: 25px;
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
             font-size: 14px;
-            font-weight: 500;
-            transition: all var(--transition);
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
         }
 
         .action-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: #6C5CE7;
+            border-color: #6C5CE7;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px var(--primary-glow);
+            box-shadow: 0 10px 25px rgba(108, 92, 231, 0.3);
         }
 
         .action-btn.liked {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: #ef4444;
             border-color: #ef4444;
             box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
         }
@@ -149,70 +283,47 @@
             padding: 8px 16px;
             border-radius: 25px;
             font-size: 13px;
-            font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all var(--transition);
-            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
         .stat-badge:hover {
             background: rgba(108, 92, 231, 0.2);
-            border-color: var(--primary);
+            border-color: #6C5CE7;
             transform: translateY(-1px);
         }
 
         .stat-badge i {
-            color: var(--primary);
+            color: #6C5CE7;
         }
 
-        .comment-form {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin: 20px 0;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .comment-item {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
-            border-radius: var(--radius);
+        .comment-form, .comment-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 12px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all var(--transition);
             backdrop-filter: blur(10px);
-        }
-
-        .comment-item:hover {
-            border-color: rgba(108, 92, 231, 0.3);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .star-rating {
-            display: inline-flex;
-            gap: 6px;
         }
 
         .star-rating i {
             cursor: pointer;
-            color: var(--text-muted);
+            color: #94a3b8;
             font-size: 24px;
+            margin-left: 6px;
             transition: all 0.2s ease;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0);
         }
 
         .star-rating i:hover {
+            color: #fbbf24;
             transform: scale(1.2);
             text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
         }
 
-        .star-rating i.active,
-        .star-rating i:hover {
-            color: var(--warning);
+        .star-rating i.active {
+            color: #fbbf24;
         }
 
         textarea {
@@ -221,35 +332,23 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            color: var(--text);
+            color: #fff;
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
             margin: 16px 0;
             resize: vertical;
-            transition: all var(--transition);
+            transition: all 0.3s ease;
         }
 
         textarea:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #6C5CE7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 40px;
-            color: var(--text-muted);
-            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.04) 100%);
-            border-radius: var(--radius);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            color: var(--primary);
-            opacity: 0.5;
+            color: #94a3b8;
         }
 
         .btn-sm {
@@ -257,54 +356,45 @@
             font-size: 14px;
             border-radius: 25px;
             width: auto;
-            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            background: linear-gradient(135deg, #6C5CE7, #a78bfa);
             border: none;
-            color: white;
+            color: #fff;
             font-weight: 600;
             cursor: pointer;
-            transition: all var(--transition);
+            transition: all 0.3s ease;
             font-family: 'Cairo', sans-serif;
         }
 
         .btn-sm:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px var(--primary-glow);
+            box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
         }
 
         .comment-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             font-size: 13px;
-            color: var(--text-muted);
+            color: #94a3b8;
             margin-bottom: 12px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .comment-header strong {
-            color: var(--text);
-            font-size: 15px;
         }
 
         .comment-text {
             font-size: 14px;
             margin-top: 12px;
             line-height: 1.6;
-            color: rgba(255, 255, 255, 0.9);
         }
 
         .loading-spinner {
             text-align: center;
             padding: 80px 40px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.04) 100%);
-            border-radius: var(--radius);
         }
 
         .loading-spinner i {
             font-size: 48px;
             animation: spin 1s linear infinite;
-            color: var(--primary);
+            color: #6C5CE7;
         }
 
         @keyframes spin {
@@ -312,27 +402,29 @@
             100% { transform: rotate(360deg); }
         }
 
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        /* تحسينات للأجهزة المحمولة */
+        /* التوافق مع الأجهزة المحمولة */
         @media (max-width: 768px) {
-            .video-info-card {
-                padding: 16px;
+            .video-player-wrapper {
+                border-radius: 12px;
             }
 
-            .video-title {
-                font-size: 18px;
+            .plyr__control--overlaid {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            .plyr__control--overlaid svg {
+                width: 24px !important;
+                height: 24px !important;
+            }
+
+            .plyr__controls {
+                padding: 8px 10px !important;
+                gap: 4px !important;
+            }
+
+            .video-info-card {
+                padding: 16px;
             }
 
             .action-btn {
@@ -343,6 +435,39 @@
             .stat-badge {
                 padding: 6px 12px;
                 font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .plyr__controls {
+                padding: 6px 8px !important;
+            }
+
+            .plyr__time {
+                font-size: 11px !important;
+            }
+
+            .plyr__control {
+                padding: 5px !important;
+            }
+
+            .plyr__control svg {
+                width: 16px !important;
+                height: 16px !important;
+            }
+        }
+
+        /* دعم الوضع الليلي */
+        @media (prefers-color-scheme: dark) {
+            .plyr--video {
+                background: #000 !important;
+            }
+        }
+
+        /* دعم الشاشات الكبيرة */
+        @media (min-width: 1400px) {
+            .video-player-wrapper {
+                max-width: 90%;
             }
         }
     </style>
@@ -490,6 +615,15 @@
                         normal: 'عادي'
                     }
                 });
+
+                // تحسين تجربة المستخدم العربية
+                plyrPlayer.on('ready', function() {
+                    // إعادة توجيه المؤشرات للـ RTL
+                    var controls = document.querySelector('.plyr__controls');
+                    if (controls) {
+                        controls.style.flexDirection = 'row';
+                    }
+                });
             }
         }
 
@@ -562,7 +696,7 @@
             container.innerHTML = 
                 '<div class="video-player-wrapper">' + playerData.html + '</div>' +
                 '<div class="video-info-card">' +
-                    '<h2 class="video-title">' + esc(video.title || 'بدون عنوان') + '</h2>' +
+                    '<h2 style="font-size:18px;margin-bottom:16px;">' + esc(video.title || 'بدون عنوان') + '</h2>' +
                     '<div class="video-stats">' +
                         '<span class="stat-badge"><i class="fas fa-user-circle"></i> ' + esc(video.user_name || '') + '</span>' +
                         '<span class="stat-badge"><i class="fas fa-book"></i> ' + esc(video.category || '') + '</span>' +
@@ -583,7 +717,7 @@
                     '</div>' +
                 '</div>' +
                 '<div class="comment-form">' +
-                    '<h4 class="section-title"><i class="fas fa-comment"></i> أضف تعليق وتقييم</h4>' +
+                    '<h4 style="margin-bottom:10px"><i class="fas fa-comment"></i> أضف تعليق وتقييم</h4>' +
                     '<div class="star-rating" id="stars">' + starsHtml + '</div>' +
                     '<textarea id="commentText" placeholder="اكتب تعليقك..." rows="3"></textarea>' +
                     '<button class="btn-sm" onclick="addComment()"><i class="fas fa-paper-plane"></i> إرسال</button>' +
@@ -617,7 +751,7 @@
                     return function() {
                         var v = parseInt(s.getAttribute('data-v'));
                         for (var j = 0; j < stars.length; j++) {
-                            stars[j].style.color = j < v ? 'var(--warning)' : 'var(--text-muted)';
+                            stars[j].style.color = j < v ? '#fbbf24' : '#94a3b8';
                         }
                     };
                 })(star);
@@ -628,7 +762,7 @@
         function updateStars() {
             var stars = document.querySelectorAll('#stars i');
             for (var i = 0; i < stars.length; i++) {
-                stars[i].style.color = i < rating ? 'var(--warning)' : 'var(--text-muted)';
+                stars[i].style.color = i < rating ? '#fbbf24' : '#94a3b8';
             }
         }
 
@@ -746,7 +880,7 @@
                 var container = document.getElementById('commentsList');
 
                 if (!comments || comments.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد تعليقات بعد</p>';
+                    container.innerHTML = '<p style="text-align:center;padding:20px;color:#94a3b8">لا توجد تعليقات بعد</p>';
                     return;
                 }
 
@@ -755,7 +889,7 @@
                     var c = comments[i];
                     var starsHtml = '';
                     for (var s = 1; s <= 5; s++) {
-                        starsHtml += '<i class="fas fa-star" style="color:' + (s <= c.rating ? 'var(--warning)' : 'var(--text-muted)') + ';font-size:12px;margin-left:2px;"></i>';
+                        starsHtml += '<i class="fas fa-star" style="color:' + (s <= c.rating ? '#fbbf24' : '#94a3b8') + ';font-size:11px"></i>';
                     }
                     html += '<div class="comment-item">' +
                                 '<div class="comment-header">' +
