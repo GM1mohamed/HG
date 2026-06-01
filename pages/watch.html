@@ -14,6 +14,9 @@
     <style>
         :root {
             --player-radius: 20px;
+            --plyr-color-main: #6C5CE7;
+            --plyr-video-controls-background: rgba(0, 0, 0, 0.85);
+            --plyr-menu-background: rgba(20, 20, 30, 0.98);
         }
 
         .video-player-wrapper {
@@ -49,11 +52,12 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Plyr overrides - تخصيص شامل للمشغل */
+        /* ============ Plyr Overrides - تحسين الوضوح ============ */
         .plyr {
             border-radius: var(--player-radius) !important;
             font-family: 'Cairo', sans-serif !important;
-            direction: ltr !important; /* Plyr يعمل بشكل أفضل مع LTR */
+            direction: ltr !important;
+            --plyr-color-main: #6C5CE7;
         }
 
         .plyr--video {
@@ -69,133 +73,212 @@
             background-size: cover !important;
         }
 
-        /* زر التشغيل الكبير */
+        /* زر التشغيل الكبير - أكثر وضوحاً */
         .plyr__control--overlaid {
-            background: linear-gradient(135deg, #6C5CE7, #a78bfa) !important;
+            background: rgba(108, 92, 231, 0.95) !important;
+            border: 3px solid rgba(255, 255, 255, 0.9) !important;
             border-radius: 50% !important;
             width: 80px !important;
             height: 80px !important;
-            box-shadow: 0 0 40px rgba(108, 92, 231, 0.6) !important;
+            box-shadow: 
+                0 0 0 8px rgba(108, 92, 231, 0.3),
+                0 0 40px rgba(108, 92, 231, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.5) !important;
             transition: all 0.3s ease !important;
-            opacity: 0.9 !important;
-        }
-
-        .plyr__control--overlaid:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 60px rgba(108, 92, 231, 0.8) !important;
             opacity: 1 !important;
         }
 
+        .plyr__control--overlaid:hover {
+            background: #6C5CE7 !important;
+            border-color: #fff !important;
+            transform: scale(1.1) !important;
+            box-shadow: 
+                0 0 0 12px rgba(108, 92, 231, 0.4),
+                0 0 60px rgba(108, 92, 231, 0.8),
+                0 15px 40px rgba(0, 0, 0, 0.6) !important;
+        }
+
         .plyr__control--overlaid svg {
-            width: 32px !important;
-            height: 32px !important;
+            width: 36px !important;
+            height: 36px !important;
+            fill: #fff !important;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) !important;
         }
 
-        /* شريط التحكم السفلي */
+        /* شريط التحكم السفلي - خلفية معتمة واضحة */
         .plyr__controls {
             background: linear-gradient(to top, 
                 rgba(0, 0, 0, 0.95) 0%, 
-                rgba(0, 0, 0, 0.7) 100%
+                rgba(0, 0, 0, 0.8) 50%,
+                rgba(0, 0, 0, 0.4) 100%
             ) !important;
-            backdrop-filter: blur(20px) !important;
-            padding: 10px 15px !important;
+            backdrop-filter: blur(10px) !important;
+            padding: 15px 15px 10px !important;
             border-radius: 0 0 var(--player-radius) var(--player-radius) !important;
-            gap: 8px !important;
+            gap: 10px !important;
+            min-height: 50px !important;
         }
 
-        /* أزرار التحكم */
+        /* أزرار التحكم - أكبر وأكثر وضوحاً */
         .plyr__control {
             color: #fff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
             transition: all 0.2s ease !important;
             border-radius: 8px !important;
+            min-width: 40px !important;
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .plyr__control:hover {
-            background: rgba(108, 92, 231, 0.3) !important;
+            background: rgba(108, 92, 231, 0.6) !important;
             color: #fff !important;
+            transform: scale(1.05) !important;
         }
 
-        /* شريط التقدم */
+        .plyr__control svg {
+            width: 20px !important;
+            height: 20px !important;
+            fill: #fff !important;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)) !important;
+        }
+
+        /* شريط التقدم - أوضح وأسمك */
         .plyr__progress__container {
             flex: 1 !important;
+            padding: 5px 0 !important;
         }
 
         .plyr__progress input[type="range"] {
-            --plyr-range-track-height: 6px;
-            height: 6px !important;
-            border-radius: 3px !important;
+            --plyr-range-track-height: 8px;
+            height: 8px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
         }
 
         .plyr__progress__buffer {
-            background: rgba(108, 92, 231, 0.3) !important;
-            border-radius: 3px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 4px !important;
         }
 
         .plyr__progress--played {
             background: linear-gradient(to right, #6C5CE7, #a78bfa) !important;
-            border-radius: 3px !important;
+            border-radius: 4px !important;
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5) !important;
         }
 
         .plyr__tooltip {
-            background: rgba(0, 0, 0, 0.9) !important;
+            background: rgba(0, 0, 0, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 6px !important;
-            font-size: 12px !important;
-            padding: 4px 10px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            padding: 5px 12px !important;
             font-family: 'Cairo', sans-serif !important;
+            color: #fff !important;
         }
 
-        /* مؤشر شريط التقدم */
+        /* مؤشر شريط التقدم - أكبر وأوضح */
         .plyr__progress input[type="range"]::-webkit-slider-thumb {
-            width: 18px !important;
-            height: 18px !important;
+            width: 22px !important;
+            height: 22px !important;
             background: #fff !important;
             border: 3px solid #6C5CE7 !important;
-            box-shadow: 0 0 15px rgba(108, 92, 231, 0.5) !important;
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.8), 0 2px 8px rgba(0,0,0,0.5) !important;
             transition: all 0.2s ease !important;
+            cursor: pointer !important;
         }
 
         .plyr__progress input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2) !important;
-            box-shadow: 0 0 25px rgba(108, 92, 231, 0.8) !important;
+            transform: scale(1.3) !important;
+            border-color: #a78bfa !important;
+            box-shadow: 0 0 30px rgba(108, 92, 231, 1) !important;
+        }
+
+        .plyr__progress input[type="range"]::-moz-range-thumb {
+            width: 22px !important;
+            height: 22px !important;
+            background: #fff !important;
+            border: 3px solid #6C5CE7 !important;
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.8) !important;
+            cursor: pointer !important;
         }
 
         /* مستوى الصوت */
         .plyr__volume input[type="range"] {
-            --plyr-range-track-height: 4px;
+            --plyr-range-track-height: 5px;
+            height: 5px !important;
         }
 
         .plyr__volume input[type="range"]::-webkit-slider-thumb {
-            width: 14px !important;
-            height: 14px !important;
+            width: 16px !important;
+            height: 16px !important;
             background: #6C5CE7 !important;
             border: 2px solid #fff !important;
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.6) !important;
         }
 
-        /* الوقت */
+        /* الوقت - خط أوضح */
         .plyr__time {
-            color: #ccc !important;
-            font-size: 13px !important;
+            color: #fff !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
             font-family: 'Cairo', sans-serif !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+            min-width: 45px !important;
+            text-align: center !important;
         }
 
-        /* قائمة الإعدادات */
+        .plyr__time--current {
+            color: #a78bfa !important;
+        }
+
+        /* فاصل الوقت */
+        .plyr__time + .plyr__time::before {
+            content: '/' !important;
+            margin: 0 4px !important;
+            color: rgba(255,255,255,0.5) !important;
+        }
+
+        /* قائمة الإعدادات - أوضح */
         .plyr__menu__container {
-            background: rgba(0, 0, 0, 0.95) !important;
+            background: rgba(20, 20, 30, 0.98) !important;
             backdrop-filter: blur(20px) !important;
             border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
             font-family: 'Cairo', sans-serif !important;
-            min-width: 200px !important;
+            min-width: 220px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+            padding: 8px 0 !important;
         }
 
         .plyr__menu__container button {
             color: #fff !important;
-            padding: 10px 15px !important;
+            padding: 12px 20px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
             transition: all 0.2s ease !important;
         }
 
         .plyr__menu__container button:hover {
-            background: rgba(108, 92, 231, 0.3) !important;
+            background: rgba(108, 92, 231, 0.4) !important;
+        }
+
+        .plyr__menu__container button[aria-checked="true"] {
+            color: #a78bfa !important;
+            background: rgba(108, 92, 231, 0.2) !important;
+        }
+
+        /* أيقونة الإعدادات */
+        .plyr__control[data-plyr="settings"] svg {
+            fill: #fff !important;
+        }
+
+        /* زر ملء الشاشة */
+        .plyr__control[data-plyr="fullscreen"] svg {
+            fill: #fff !important;
         }
 
         /* إخفاء شعار يوتيوب */
@@ -203,7 +286,7 @@
             display: none !important;
         }
 
-        /* فيديو عادي (غير Plyr) */
+        /* فيديو عادي */
         video {
             width: 100% !important;
             height: 100% !important;
@@ -212,11 +295,10 @@
             background: #000 !important;
         }
 
-        /* تخصيص Controls الفيديو العادي */
         video::-webkit-media-controls-panel {
             background: linear-gradient(to top, 
-                rgba(0, 0, 0, 0.9) 0%, 
-                rgba(0, 0, 0, 0.5) 100%
+                rgba(0, 0, 0, 0.95) 0%, 
+                rgba(0, 0, 0, 0.7) 100%
             ) !important;
         }
 
@@ -224,7 +306,7 @@
             filter: brightness(1.2) !important;
         }
 
-        /* تحسينات الحاوية العامة */
+        /* باقي التنسيقات */
         .video-info-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -414,13 +496,28 @@
             }
 
             .plyr__control--overlaid svg {
-                width: 24px !important;
-                height: 24px !important;
+                width: 28px !important;
+                height: 28px !important;
             }
 
             .plyr__controls {
-                padding: 8px 10px !important;
-                gap: 4px !important;
+                padding: 12px 10px 8px !important;
+                gap: 6px !important;
+            }
+
+            .plyr__control {
+                min-width: 36px !important;
+                min-height: 36px !important;
+            }
+
+            .plyr__control svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+
+            .plyr__time {
+                font-size: 12px !important;
+                min-width: 35px !important;
             }
 
             .video-info-card {
@@ -440,34 +537,61 @@
 
         @media (max-width: 480px) {
             .plyr__controls {
-                padding: 6px 8px !important;
-            }
-
-            .plyr__time {
-                font-size: 11px !important;
+                padding: 10px 6px 6px !important;
+                gap: 4px !important;
             }
 
             .plyr__control {
-                padding: 5px !important;
+                min-width: 32px !important;
+                min-height: 32px !important;
             }
 
             .plyr__control svg {
                 width: 16px !important;
                 height: 16px !important;
             }
-        }
 
-        /* دعم الوضع الليلي */
-        @media (prefers-color-scheme: dark) {
-            .plyr--video {
-                background: #000 !important;
+            .plyr__time {
+                font-size: 11px !important;
+                min-width: 30px !important;
+            }
+
+            .plyr__progress input[type="range"] {
+                --plyr-range-track-height: 6px;
+            }
+
+            .plyr__progress input[type="range"]::-webkit-slider-thumb {
+                width: 18px !important;
+                height: 18px !important;
             }
         }
 
-        /* دعم الشاشات الكبيرة */
         @media (min-width: 1400px) {
             .video-player-wrapper {
                 max-width: 90%;
+            }
+            
+            .plyr__control--overlaid {
+                width: 90px !important;
+                height: 90px !important;
+            }
+
+            .plyr__control--overlaid svg {
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            .plyr__controls {
+                padding: 18px 20px 12px !important;
+            }
+
+            .plyr__control {
+                min-width: 44px !important;
+                min-height: 44px !important;
+            }
+
+            .plyr__time {
+                font-size: 15px !important;
             }
         }
     </style>
@@ -615,15 +739,6 @@
                         normal: 'عادي'
                     }
                 });
-
-                // تحسين تجربة المستخدم العربية
-                plyrPlayer.on('ready', function() {
-                    // إعادة توجيه المؤشرات للـ RTL
-                    var controls = document.querySelector('.plyr__controls');
-                    if (controls) {
-                        controls.style.flexDirection = 'row';
-                    }
-                });
             }
         }
 
@@ -632,7 +747,6 @@
             var videoUrl = video.url || '';
             var playerHtml = '';
 
-            // معالجة YouTube (بدون علامة المصدر)
             if (sourceType === 'youtube' || videoUrl.indexOf('youtube.com') !== -1 || videoUrl.indexOf('youtu.be') !== -1) {
                 var videoId = extractYouTubeId(videoUrl);
 
@@ -652,7 +766,6 @@
                     };
                 }
             }
-            // معالجة Telegram (بدون علامة المصدر)
             else if (sourceType === 'telegram' && videoUrl) {
                 playerHtml = '<video controls autoplay style="width:100%; border-radius:12px;" poster="' + (video.thumbnail || '') + '">' +
                              '<source src="' + videoUrl + '" type="video/mp4">' +
@@ -663,7 +776,6 @@
                     videoId: null
                 };
             }
-            // رابط مباشر
             else if (videoUrl && videoUrl.indexOf('.mp4') !== -1) {
                 playerHtml = '<video controls autoplay style="width:100%; border-radius:12px;" poster="' + (video.thumbnail || '') + '">' +
                              '<source src="' + videoUrl + '" type="video/mp4">' +
